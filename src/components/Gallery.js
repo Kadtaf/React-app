@@ -3,7 +3,8 @@ import axios from "axios";
 import {Pagination} from "react-bootstrap";
 import HitItem from "./HitItem";
 import SearchHitForm from "./SearchHitForm";
-import {keyboard} from "@testing-library/user-event/dist/keyboard";
+import CustomPagination from "./CustomPagination";
+
 class Gallery extends Component {
 
     constructor(props) {
@@ -23,13 +24,15 @@ class Gallery extends Component {
     }
 
     getHits(keyword) {
-        let url = "https://pixabay.com/api/?key=41457716-b5857a2d5a330eaf201a879d1&q="
+        const PIXABAY_API_KEY = '41457716-b5857a2d5a330eaf201a879d1';
+        let url = "https://pixabay.com/api/?key=" + PIXABAY_API_KEY + "&q="
             + keyword + "&page=" + this.state.currentPage
             + "&per_page=" + this.state.pageSize;
         axios.get(url).then((response) => {
             let totalP = (response.data.totalHits % this.state.pageSize === 0)
                                     ? response.data.totalHits / this.state.pageSize
-                                    : 1 + response.data.totalHits % this.state.pageSize
+                                    : 1 + Math.floor(response.data.totalHits / this.state.pageSize);
+
             this.setState({
                 hits:response.data.hits,
                 totalPages: totalP,
@@ -42,8 +45,13 @@ class Gallery extends Component {
     }
 
     search = (keyword) => {
+            this.setState({
+                currentPage:1,
+                pages:[]
+            }, () => {
+                this.getHits(keyword);
+            })
 
-        this.getHits(keyword);
     }
 
     goToPage = (page) => {
@@ -65,31 +73,12 @@ class Gallery extends Component {
                     )
                 }
                 </div>
-                <Pagination>
-                    <Pagination.Prev
-                        onClick={() => this.goToPage(this.state.currentPage - 1)}
-                        disabled={this.state.currentPage === 1} />
-                    {
-                        this.state.pages.slice(0, 7).map((page, index) => (
-                            <Pagination.Item
-                                key={`${page}_${index}`}
-                                active={index + 1 === this.state.currentPage}
-                                onClick={() => this.goToPage(index + 1)}
-                            >
-                                {index + 1}
-                            </Pagination.Item>
-                        ))
-                    }
-                    {this.state.totalPages > 7 && <Pagination.Ellipsis />}
-                    {this.state.totalPages > 7 && (
-                        <Pagination.Item onClick={() => this.goToPage(this.state.totalPages)}>
-                            {this.state.totalPages}
-                        </Pagination.Item>
-                    )}
-                    <Pagination.Next
-                        onClick={() =>this.goToPage(this.state.currentPage + 1)}
-                        disabled={this.state.currentPage === this.state.totalPages} />
-                </Pagination>
+                <CustomPagination
+                    currentPage={this.state.currentPage}
+                    totalPages={this.state.totalPages}
+                    onPageChange={this.goToPage}
+                    pages={this.state.pages}
+                />
 
             </div>
         );

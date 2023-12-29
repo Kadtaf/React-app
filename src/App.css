@@ -7,6 +7,13 @@
   pointer-events: none;
 }
 
+.card-img {
+  width: 300px;
+ /* height: 200px; /* Hauteur fixe, ou tu peux utiliser "auto" pour laisser la hauteur s'ajuster */
+  object-fit: cover;
+}
+
+
 @media (prefers-reduced-motion: no-preference) {
   .App-logo {
     animation: App-logo-spin infinite 20s linear;
